@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YTV - Películas</title>
+  <style>
+    /* Estilos generales */
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: url('https://wallpapers.com/images/featured-full/telefono-rojo-y-negro-a9fes4pl3gw5l98z.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      background-color: rgba(20,20,20,0.9);
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+      color: #e50914;
+    }
+    /* Sección del video principal */
+    .video-section {
+      padding: 100px 20px 20px;
+      text-align: center;
+    }
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding-top: 56.25%; /* Proporción 16:9 */
+      border-radius: 10px;
+      overflow: hidden;
+      background-color: #000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+    }
+    /* Miniatura del video principal */
+    #mainThumbnail {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://almomento.net/wp-content/uploads/2023/11/tv_dominicana_el_show_de_raymond_y_miguel_vbig-7.jpg') no-repeat center center;
+      background-size: cover;
+      z-index: 3;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    #mainThumbnail:hover {
+      transform: scale(1.03);
+    }
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      z-index: 2;
+      display: none;
+    }
+    .fullscreen-btn {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      border: none;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 18px;
+      border-radius: 5px;
+      z-index: 4;
+      transition: background 0.3s ease;
+    }
+    .fullscreen-btn:hover {
+      background: rgba(0, 0, 0, 1);
+    }
+    /* Carrusel de películas */
+    .movie-container {
+      margin: 20px 10px;
+      display: flex;
+      overflow-x: auto;
+      gap: 15px;
+      padding: 10px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .movie-item {
+      flex: 0 0 35%;
+      background-color: rgba(20,20,20,0.8);
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      position: relative;
+      scroll-snap-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .movie-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.8);
+    }
+    .thumbnail {
+      width: 100%;
+      height: 140px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.7);
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 2;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .play-btn:hover {
+      background: rgba(0, 0, 0, 1);
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    .video-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      background: #000;
+      border-radius: 10px;
+      z-index: 3;
+    }
+    .video-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 10px;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(229,9,20,0.8);
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      z-index: 4;
+      transition: background 0.3s ease;
+    }
+    .close-btn:hover {
+      background: rgba(229,9,20,1);
+    }
+    .movie-title-text {
+      margin-top: 8px;
+      font-size: 16px;
+    }
+    /* Responsividad */
+    @media (max-width: 768px) {
+      .movie-item {
+        flex: 0 0 80%;
+      }
+      .thumbnail {
+        height: 160px;
+      }
+      .play-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lo mejor de la Semana</h1>
+  </header>
+
+  <!-- Reproductor principal: Película Principal "Cirugía Estética" -->
+  <div class="video-section">
+    <div class="video-wrapper">
+      <!-- Miniatura del video principal -->
+      <div id="mainThumbnail" onclick="loadMainVideo()"></div>
+      <!-- Video principal -->
+      <iframe id="mainVideo" src="https://www.youtube.com/embed/1BNGVmQliko?si=U3IqZYecu4pxfD2G&autoplay=1" allowfullscreen></iframe>
+      <button class="fullscreen-btn" onclick="toggleFullscreen(event, 'mainVideo')">⛶</button>
+    </div>
+    <h2 class="video-title">Cirugía Estética</h2>
+  </div>
+
+  <!-- Primer carrusel: Películas 2, 3 y 4 -->
+  <div class="movie-container">
+    <!-- 2. Muñecas Malditas -->
+    <div class="movie-item">
+      <div class="thumbnail" style="background-image: url('https://cdn.hobbyconsolas.com/sites/navi.axelspringer.es/public/media/image/2016/01/556688-anabelle-muneca-real-venta.jpg');">
+        <button class="play-btn" onclick="playMovie(this, 'https://www.youtube.com/embed/HJ1pV_BbDVA?si=kPad5xcWggmQQp1a&autoplay=1')">►</button>
+      </div>
+      <div class="video-container">
+        <button class="close-btn" onclick="closeMovie(this)">✖</button>
+        <iframe frameborder="0" allowfullscreen></iframe>
+      </div>
+      <p class="movie-title-text">Muñecas Malditas</p>
+    </div>
+    <!-- 3. Los tres chiflados -->
+    <div class="movie-item">
+      <div class="thumbnail" style="background-image: url('https://2img.net/h/i976.photobucket.com/albums/ae245/binbam/Los-Tres-Chiflados-2012.jpg');">
+        <button class="play-btn" onclick="playMovie(this, 'https://www.youtube.com/embed/zdtuvVpCerU?si=eDBXwdPHAplkwLJY&autoplay=1')">►</button>
+      </div>
+      <div class="video-container">
+        <button class="close-btn" onclick="closeMovie(this)">✖</button>
+        <iframe frameborder="0" allowfullscreen></iframe>
+      </div>
+      <p class="movie-title-text">Los tres chiflados</p>
+    </div>
+    <!-- 4. Amor Verdadero -->
+    <div class="movie-item">
+      <div class="thumbnail" style="background-image: url('https://e.radio-grpp.io/normal/2022/06/15/085108_1273591.jpg');">
+        <button class="play-btn" onclick="playMovie(this, 'https://www.youtube.com/embed/yQWqLEoYsmw?si=6lbgR7MizWsguE-J&autoplay=1')">►</button>
+      </div>
+      <div class="video-container">
+        <button class="close-btn" onclick="closeMovie(this)">✖</button>
+        <iframe frameborder="0" allowfullscreen></iframe>
+      </div>
+      <p class="movie-title-text">Amor Verdadero</p>
+    </div>
+  </div>
+
+  <!-- Segundo carrusel: Películas 5, 6 y 7 -->
+  <div class="movie-container">
+    <!-- 5. Salvaje Oeste -->
+    <div class="movie-item">
+      <div class="thumbnail" style="background-image: url('https://i.blogs.es/4da771/forajidos-de-leyenda/1366_2000.jpg');">
+        <button class="play-btn" onclick="playMovie(this, 'https://www.youtube.com/embed/a7T10gw-APY?si=IvtyHFEPf1OsOu08&autoplay=1')">►</button>
+      </div>
+      <div class="video-container">
+        <button class="close-btn" onclick="closeMovie(this)">✖</button>
+        <iframe frameborder="0" allowfullscreen></iframe>
+      </div>
+      <p class="movie-title-text">Salvaje Oeste</p>
+    </div>
+    <!-- 6. Un Rey en La Habana -->
+    <div class="movie-item">
+      <div class="thumbnail" style="background-image: url('https://cloud10.todocoleccion.online/cine-guias-peliculas/tc/2019/04/06/09/158773114.webp');">
+        <button class="play-btn" onclick="playMovie(this, 'https://www.youtube.com/embed/udbsl7qC__8?si=xhfUC2bneIiqCs1l&autoplay=1')">►</button>
+      </div>
+      <div class="video-container">
+        <button class="close-btn" onclick="closeMovie(this)">✖</button>
+        <iframe frameborder="0" allowfullscreen></iframe>
+      </div>
+      <p class="movie-title-text">Un Rey en La Habana</p>
+    </div>
+    <!-- 7. Perico Ripiao -->
+    <div class="movie-item">
+      <div class="thumbnail" style="background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgrh_8RisO1mYNDnNqhOuO-06QUTY0D5GyKVBAljgcj6TDjBYgEJE8irBq_OEtquTa5EkahqANVXEuUkk932pZAWqdp-IkjGU-sd7O2MADN92eKm7I0QfUmTdU8Myl7lZlH0L1LWfn-gbgx/s1600/Perico+poste+frontal.jpg');">
+        <button class="play-btn" onclick="playMovie(this, 'https://www.youtube.com/embed/PhJiBV_xYOw?si=Z8dl0Rywxn7lL2Cy&autoplay=1')">►</button>
+      </div>
+      <div class="video-container">
+        <button class="close-btn" onclick="closeMovie(this)">✖</button>
+        <iframe frameborder="0" allowfullscreen></iframe>
+      </div>
+      <p class="movie-title-text">Perico Ripiao</p>
+    </div>
+  </div>
+
+  <!-- Tercer carrusel: Películas 8, 9 y 10 -->
+  <div class="movie-container">
+    <!-- 8. Condenado injustamente -->
+    <div class="movie-item">
+      <div class="thumbnail" style="background-image: url('https://www.telemundo.com/sites/nbcutelemundo/files/styles/fit-1000w/public/images/article/cover/2020/02/24/detenido_-_prision.jpg?ramen_itok=iqwQftIcTf');">
+        <button class="play-btn" onclick="playMovie(this, 'https://www.youtube.com/embed/ayvDHAReTeY?si=xAVER-46T-_npGaQ&autoplay=1')">►</button>
+      </div>
+      <div class="video-container">
+        <button class="close-btn" onclick="closeMovie(this)">✖</button>
+        <iframe frameborder="0" allowfullscreen></iframe>
+      </div>
+      <p class="movie-title-text">Condenado injustamente</p>
+    </div>
+    <!-- 9. Acción Criminal -->
+    <div class="movie-item">
+      <div class="thumbnail" style="background-image: url('https://tecolotito.elsiglodetorreon.com.mx/cdn-cgi/image/format=webp,width=773,quality=75/i/2025/02/1873321.jpeg');">
+        <button class="play-btn" onclick="playMovie(this, 'https://www.youtube.com/embed/1aqCo2gr3GU?si=MX2hgQxTW0UeO2Km&autoplay=1')">►</button>
+      </div>
+      <div class="video-container">
+        <button class="close-btn" onclick="closeMovie(this)">✖</button>
+        <iframe frameborder="0" allowfullscreen></iframe>
+      </div>
+      <p class="movie-title-text">Acción Criminal</p>
+    </div>
+    <!-- 10. 12 Horas para el Fin -->
+    <div class="movie-item">
+      <div class="thumbnail" style="background-image: url('https://image.tmdb.org/t/p/original/gurQloozD4oBjjCBhqm3KPjxWxL.jpg');">
+        <button class="play-btn" onclick="playMovie(this, 'https://www.youtube.com/embed/6eYuCHiuim4?si=DJyLSwqPc_fTF62S&autoplay=1')">►</button>
+      </div>
+      <div class="video-container">
+        <button class="close-btn" onclick="closeMovie(this)">✖</button>
+        <iframe frameborder="0" allowfullscreen></iframe>
+      </div>
+      <p class="movie-title-text">12 Horas para el Fin</p>
+    </div>
+  </div>
+
+  <script>
+    function loadMainVideo() {
+      var thumbnail = document.getElementById("mainThumbnail");
+      var video = document.getElementById("mainVideo");
+      // Oculta la miniatura y muestra el iframe del video principal
+      thumbnail.style.display = "none";
+      video.style.display = "block";
+    }
+
+    function playMovie(button, videoUrl) {
+      let movieItem = button.closest('.movie-item');
+      let videoContainer = movieItem.querySelector('.video-container');
+      let iframe = videoContainer.querySelector('iframe');
+      iframe.src = videoUrl;
+      videoContainer.style.display = 'block';
+    }
+
+    function closeMovie(button) {
+      let videoContainer = button.closest('.video-container');
+      let iframe = videoContainer.querySelector('iframe');
+      iframe.src = "";
+      videoContainer.style.display = 'none';
+    }
+
+    function toggleFullscreen(event, elementId) {
+      event.stopPropagation();
+      let element = document.getElementById(elementId);
+      if (!document.fullscreenElement) {
+        if (element.requestFullscreen) {
+          element.requestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+          element.mozRequestFullScreen();
+        } else if (element.webkitRequestFullscreen) {
+          element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) {
+          element.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
